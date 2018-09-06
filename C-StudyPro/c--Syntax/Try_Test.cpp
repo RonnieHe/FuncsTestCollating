@@ -1,4 +1,4 @@
-// Try_Test.cpp : ¶¨Òå¿ØÖÆÌ¨Ó¦ÓÃ³ÌĞòµÄÈë¿Úµã¡£
+// Try_Test.cpp : å®šä¹‰æ§åˆ¶å°åº”ç”¨ç¨‹åºçš„å…¥å£ç‚¹ã€‚
 //
 
 
@@ -18,7 +18,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	delete pa;
 
 	int **ppA;
-	ppA = new int*[5];//int *a[5]Ö¸ÕëÊı×é£¬Ã¿Ò»¸öÔªËØ¶¼ÊÇintÖ¸ÕëÀàĞÍ¡£¡£¡£int (*a)[5]Êı×éÖ¸Õë£¬Ö¸ÏòintÊı×éµÄÖ¸Õë
+	ppA = new int*[5];//int *a[5]æŒ‡é’ˆæ•°ç»„ï¼Œæ¯ä¸€ä¸ªå…ƒç´ éƒ½æ˜¯intæŒ‡é’ˆç±»å‹ã€‚ã€‚ã€‚int (*a)[5]æ•°ç»„æŒ‡é’ˆï¼ŒæŒ‡å‘intæ•°ç»„çš„æŒ‡é’ˆ
 	for (int i = 0; i < 5; i++)
 		ppA[i] = new int[6];
 
@@ -30,14 +30,10 @@ int _tmain(int argc, _TCHAR* argv[])
 	
 	return 0;
 }
-///×ÜÖ®Ò»¾ä»°£¬¶¨ÒåÁËÖ¸ÕëÒ»¶¨ÒªÖªµÀÖ¸ÕëÖ¸ÏòÄÄÀï
+///æ€»ä¹‹ä¸€å¥è¯ï¼Œå®šä¹‰äº†æŒ‡é’ˆä¸€å®šè¦çŸ¥é“æŒ‡é’ˆæŒ‡å‘å“ªé‡Œ
 #endif 
 
-class CBB
-{
-public:
-	int m_nVa;
-};
+
 
 #include <stdlib.h>
 #include "stdafx.h"
@@ -53,7 +49,12 @@ int add_n(int n)
 	return i; 
 }
 
-
+/////cannot position before include
+class CBB
+{
+public:
+	int m_nVa;
+};
 //////////////
 struct S1
 {
@@ -61,7 +62,7 @@ struct S1
     char c;
 }s1;
 
-#pragma pack(push) // ½«µ±Ç°packÉèÖÃÑ¹Õ»±£´æ
+#pragma pack(push) // å°†å½“å‰packè®¾ç½®å‹æ ˆä¿å­˜
 #pragma pack(1)
 struct S2
 {
@@ -69,11 +70,29 @@ struct S2
     char c;
 }s2;
 #pragma pack()
-#pragma pack(pop) // »Ö¸´ÏÈÇ°µÄpackÉèÖÃ
+#pragma pack(pop) // æ¢å¤å…ˆå‰çš„packè®¾ç½®
 /////////
 int main()
 {
-#if 0
+	//////test 1
+	int *pa = new int(5);
+	cout << "Poniter pa: " << hex << pa << endl;//
+	cout << "Pointer *pa : " << dec << *pa << endl;//
+	delete pa;
+
+	int **ppA;
+	ppA = new int*[5];//int *a[5]æŒ‡é’ˆæ•°ç»„ï¼Œæ¯ä¸€ä¸ªå…ƒç´ éƒ½æ˜¯intæŒ‡é’ˆç±»å‹ã€‚ã€‚ã€‚int (*a)[5]æ•°ç»„æŒ‡é’ˆï¼ŒæŒ‡å‘intæ•°ç»„çš„æŒ‡é’ˆ
+	for (int i = 0; i < 5; i++)
+		ppA[i] = new int[6];
+
+
+	//release
+	for (int i = 0; i < 5; i++)
+		delete[] ppA[i];
+	delete ppA;
+
+	getchar();
+#if 1
 	/////////////////////convert
 	const CBB b1 ;
 	//b1.m_nVa = 10;//error.....cannot change const object
@@ -82,21 +101,22 @@ int main()
         b2= const_cast <CBB *>(&b1);
 	b2->m_nVa = 20;
 	cout << "const_cast convert variable value:"<<b2->m_nVa << endl;
+	getchar();
 //////////////////////////////////////////////////////////////////////////////////
 	int c[4] = { 1, 2, 3, 4 };
-	int *a[4]; //Ö¸ÕëÊı×é.....Ã¿Ò»¸öÔªËØ¶¼ÊÇintÖ¸ÕëÀàĞÍ
-	int(*b)[4]; //Êı×éÖ¸Õë.....Ö¸ÏòintÊı×éµÄÖ¸Õë
+	int *a[4]; //æŒ‡é’ˆæ•°ç»„.....æ¯ä¸€ä¸ªå…ƒç´ éƒ½æ˜¯intæŒ‡é’ˆç±»å‹
+	int(*b)[4]; //æ•°ç»„æŒ‡é’ˆ.....æŒ‡å‘intæ•°ç»„çš„æŒ‡é’ˆ
 
-	b = &c;	//½«Êı×écÖĞÔªËØ¸³¸øÊı×éb
+	b = &c;	//å°†æ•°ç»„cä¸­å…ƒç´ èµ‹ç»™æ•°ç»„b
 
 	for (int i = 0; i<4; i++)
 	{
-		a[i] = &c[i];//aµÄÃ¿Ò»Ïî±ØĞë¶ÔÓ¦µØÖ·.
+		a[i] = &c[i];//açš„æ¯ä¸€é¡¹å¿…é¡»å¯¹åº”åœ°å€.
 	}
-	//Êä³ö¿´ÏÂ½á¹û
-	cout << *a[1] << endl; //Êä³ö2¾Í¶Ô
-	cout << (*b)[2] << endl; //Êä³ö3¾Í¶Ô
-
+	//è¾“å‡ºçœ‹ä¸‹ç»“æœ
+	cout << *a[1] << endl; //è¾“å‡º2å°±å¯¹
+	cout << (*b)[2] << endl; //è¾“å‡º3å°±å¯¹
+	getchar();
 /////////////////////////////////////////////////////////////////////////////////////
 
 	char *cArr[5] = { "Hello", "Lenovo", "Welcome", "To", "C++language" };
@@ -107,18 +127,19 @@ int main()
 
 	for (int i = 0; i<5; i++)
 	{
-		cout << cArr[i] << endl; //Êä³ö¸ÃµØÖ·ÉÏµÄ´æ´¢ÄÚÈİ
+		cout << cArr[i] << endl; //è¾“å‡ºè¯¥åœ°å€ä¸Šçš„å­˜å‚¨å†…å®¹
 
-		ppa[i] = cArr[i];//aµÄÃ¿Ò»Ïî±ØĞë¶ÔÓ¦µØÖ·.
-		cout << ppa[i] << endl; //Êä³ö¸ÃµØÖ·ÉÏµÄ´æ´¢ÄÚÈİ
+		ppa[i] = cArr[i];//açš„æ¯ä¸€é¡¹å¿…é¡»å¯¹åº”åœ°å€.
+		cout << ppa[i] << endl; //è¾“å‡ºè¯¥åœ°å€ä¸Šçš„å­˜å‚¨å†…å®¹
 
 		ppT[i] = cArr[i];
-		cout << ppT[i] << endl; //Êä³ö¸ÃµØÖ·ÉÏµÄ´æ´¢ÄÚÈİ
+		cout << ppT[i] << endl; //è¾“å‡ºè¯¥åœ°å€ä¸Šçš„å­˜å‚¨å†…å®¹
 	}
-	cout << ppa[1] << endl; //Êä³ö¸ÃµØÖ·ÉÏµÄ´æ´¢ÄÚÈİ£¬Lenovo
+	cout << ppa[1] << endl; //è¾“å‡ºè¯¥åœ°å€ä¸Šçš„å­˜å‚¨å†…å®¹ï¼ŒLenovo
 
-	cout << *ppa[1] << endl; //Ö»Êä³öÊ××Ö·û...µÈÍ¬ÓÚppa[1][0],Ö»È¡¸ÃµØÖ·µÄÒ»¸ö×Ö½ÚÄÚÈİ
-	cout << *cArr[1] << endl; //Ö»Êä³öÊ××Ö·û
+	cout << *ppa[1] << endl; //åªè¾“å‡ºé¦–å­—ç¬¦...ç­‰åŒäºppa[1][0],åªå–è¯¥åœ°å€çš„ä¸€ä¸ªå­—èŠ‚å†…å®¹
+	cout << *cArr[1] << endl; //åªè¾“å‡ºé¦–å­—ç¬¦
+	getchar();
 #endif 
     /////////////////////////////////////////////////////////////////////////////////////
     /////////////////////////////////////////////////////////////////////////////////////
@@ -127,15 +148,18 @@ int main()
 	na = add_n(3);
 	cout << na << endl;
 
+	getchar();
     cout << "S1 sizeof=" << sizeof(s1) << ",S2 (pack(1)) sizeof=" << sizeof(s2) << endl;
     ////////////////
     char acInput[] = "abcdxyzMyNameIsHanmeimei";//,cannot run ok
     char *cInput = "abcdxyzMyNameIsHanmeimei";
     char *pcOutput = new char[100];
     
-    printf("source string:%s\n", cInput);//cInput point to first char
+    printf("source string (from *cInput):%s\n", cInput);//cInput point to first char, output memory until \0
+	getchar();
 
     int nTempBuffer[500] = { 0 };
+	printf("Index of int array is each char's ASCII \n");
     int i = 0;
 #if 1
     while ((*cInput) != '\0')///if cInput is array, *cInput is always equal to 'a'
@@ -145,7 +169,7 @@ int main()
         if (nTempBuffer[*cInput - '0'] == 1)
         {
            // pcOutput[i++] = *cInput;
-            printf("char %c \n", *cInput);
+            printf("repeat char %c \n", *cInput);
             *(pcOutput + i) = *cInput;
             i++;
         }
@@ -172,6 +196,7 @@ int main()
     pcOutput[k] = '\0';
 #endif
 
-    printf("source string:%s,\n processed string:%s\n", cInput, pcOutput);////cInput point to '\0'
+    printf("source string(from *cInput, is point to '\\0'):%s\n, processed(delete repeat char) string:%s\n", cInput, pcOutput);////cInput point to '\0'
+	getchar();
 	return 0;
 }

@@ -9,7 +9,50 @@ using namespace std;
 
 #include <stdio.h>  //printf
 
-#define Test_Power
+//#define Test_fileExist
+#ifdef Test_fileExist
+std::string g_flzName = "D:\\_Temp\\HX.flz";
+std::string g_strDesPath = "D:\\_Temp\\HXtmp\\";
+BOOL IsFileExist(const std::string &csFile);
+BOOL IsDirExist(const std::string &csDir);
+
+#endif
+
+#define Test_unzip
+#ifdef Test_unzip
+#include "zip\unzip.h"
+//#include "zip\zip.h"
+
+enum zipType
+{
+	zipType_FWNonSecure = 0,
+	zipType_FWsecureBoot = 1,
+	zipType_850Download,
+	zipType_860Download,
+	zipType_USBdownload
+};
+
+std::string g_flzName = "D:\\_Temp\\HX.flz";
+std::string g_strTmpDesPath = "D:\\_Temp\\HXtmp\\";
+//std::string strDesPath2 = "D:\\_Temp\\HXtmp2\\";
+//std::string g_strReNamePath = "E:\\_Temp\\HXfwdata\\";//cannot use MoveFile
+std::string g_strReNamePath = "D:\\_Temp\\HXtmp_movefile_sameDrive\\";
+
+//int g_nFilterType = 1;
+std::string g_strFilter1 = "_Secureboot.zip";
+std::string g_strFilter2 = "850Download.zip";//
+
+BOOL UnzipFlzFile(std::string strFilter, std::string &strTargetFullName);//in filter, out target full path name
+//BOOL UnzipFlzFile(std::string strFilter, std::string strTargetFullName);//Error, cannot get strTargetFullName when function exit.
+BOOL UnzipTargetFile(std::string strTarget , int nType);
+
+// test alone
+BOOL UnzipFlsFile();
+
+#endif
+
+
+//#define Test_Power
 #ifdef Test_Power
 void IsACadapterConnected();
 #endif
@@ -163,12 +206,12 @@ void solve(char *str, int len)
 	int i, hash[256];
 	memset(hash, 0, sizeof(hash));
 
-	for (i = 0; i < len; ++i)//hashÊı×éµÄ¸÷Öµ¾ùÎª0
+	for (i = 0; i < len; ++i)//hashæ•°ç»„çš„å„å€¼å‡ä¸º0
 	{
-		if (0 == hash[str[i]])///½«´ıÅÅĞò×Ö·û±¾ÉíµÄASCIIÂëÖµ×÷ÎªÊı×éÏÂ±êÖµ£¬·Ö±ğ½«¸÷×Ö·ûÂë¶ÔÓ¦µÄhashÊı×éµÄÖµ¸ÄÎª1£¬
+		if (0 == hash[str[i]])///å°†å¾…æ’åºå­—ç¬¦æœ¬èº«çš„ASCIIç å€¼ä½œä¸ºæ•°ç»„ä¸‹æ ‡å€¼ï¼Œåˆ†åˆ«å°†å„å­—ç¬¦ç å¯¹åº”çš„hashæ•°ç»„çš„å€¼æ”¹ä¸º1ï¼Œ
 			hash[str[i]] = 1;
 	}
-	for (i = 0; i < 256; ++i)//ÒÀ´ÎÊä³öhashÊı×éÖĞÎª1µÄ¸÷ÏÂ±ê¶ÔÓ¦µÄchar
+	for (i = 0; i < 256; ++i)//ä¾æ¬¡è¾“å‡ºhashæ•°ç»„ä¸­ä¸º1çš„å„ä¸‹æ ‡å¯¹åº”çš„char
 	{
 		if (0 != hash[i])
 			putchar(i);
@@ -269,7 +312,7 @@ void DeletePreBkPath()
 	WIN32_FIND_DATA fileInfo;
 	HANDLE hFind;
 	DWORD fileSize = 0;
-	////const char *fileName = ÎÄ¼şµÄÂ·¾¶¼°Ãû×Ö;
+	////const char *fileName = æ–‡ä»¶çš„è·¯å¾„åŠåå­—;
 	hFind = FindFirstFile(str_path, &fileInfo);
 	if (hFind != INVALID_HANDLE_VALUE)
 		fileSize = fileInfo.nFileSizeLow;
@@ -286,9 +329,9 @@ void DeletePreBkPath()
 		SHFILEOPSTRUCT sFileOp = { 0 };
 		sFileOp.hwnd = NULL;
 		sFileOp.wFunc = FO_RENAME;//FO_DELETE;//
-		sFileOp.pFrom = str_path;//ÎÄ¼ş»òÎÄ¼ş¼ĞÂ·¾¶
+		sFileOp.pFrom = str_path;//æ–‡ä»¶æˆ–æ–‡ä»¶å¤¹è·¯å¾„
 		sFileOp.pTo = str_path_bk;
-		sFileOp.fFlags = FOF_NO_UI;// FOF_ALLOWUNDO;//´Ë±êÖ¾Ê¹É¾³ıÎÄ¼ş±¸·İµ½Windows»ØÊÕÕ¾ 
+		sFileOp.fFlags = FOF_NO_UI;// FOF_ALLOWUNDO;//æ­¤æ ‡å¿—ä½¿åˆ é™¤æ–‡ä»¶å¤‡ä»½åˆ°Windowså›æ”¶ç«™ 
 		sFileOp.hNameMappings = NULL;
 		sFileOp.lpszProgressTitle = NULL;
 		SHFileOperation(&sFileOp);//execute delete
@@ -348,7 +391,7 @@ int main(void)
 	}
 	else
 	{
-		for (int i = 0; i < nLength; i++) //stringÀàµÄsize()/length()·½·¨·µ»ØµÄÊÇ×Ö½ÚÊı£¬²»¹ÜÊÇ·ñÓĞºº×Ö
+		for (int i = 0; i < nLength; i++) //stringç±»çš„size()/length()æ–¹æ³•è¿”å›çš„æ˜¯å­—èŠ‚æ•°ï¼Œä¸ç®¡æ˜¯å¦æœ‰æ±‰å­—
 		{
 			if (str_iccIdTmp1[i] != str_iccIdTmp2[i])
 			{
@@ -493,13 +536,343 @@ int main(void)
 
 #ifdef Test_Power
 	IsACadapterConnected();
-	getchar();//ÔİÍ£³ÌĞò
+	getchar();//æš‚åœç¨‹åº
 	IsACadapterConnected();
 #endif
 
-	getchar();//ÔİÍ£³ÌĞò
+
+#ifdef Test_unzip
+	printf("Start unzip and copy files in %s \r\n", g_strFilter1.c_str());
+	std::string strTargetFullName;
+	UnzipFlzFile(g_strFilter1, strTargetFullName);
+	UnzipTargetFile(strTargetFullName,1);
+
+	printf("Start unzip and copy files in %s \r\n", g_strFilter2.c_str());
+	getchar();
+	strTargetFullName = "";
+	UnzipFlzFile(g_strFilter2, strTargetFullName);
+	UnzipTargetFile(strTargetFullName, 2);
+	//UnzipFlsFile(); 
+#endif
+
+#ifdef Test_fileExist
+
+	bool res = false;
+	res = IsFileExist(g_flzName);
+	res = false;
+	res = IsDirExist(g_strDesPath);
+
+#endif
+	printf("Enter to end now.....\r\n");
+	getchar();//æš‚åœç¨‹åº
 	return 0;
 }
+
+#ifdef Test_unzip
+BOOL UnzipFlzFile(std::string strFilter, std::string &strTargetFullName)//;//in filter, out target full path name
+//BOOL UnzipFlzFile(std::string strFilter, std::string strTargetFullName)//;////Error, cannot get strTargetFullName when function exit.
+{
+	char ch_tmp[MAX_PATH] = { 0 };
+	BOOL b_unZip = FALSE;
+	HZIP hz = OpenZip(g_flzName.c_str(), 0);
+	ZIPENTRY ze;
+
+	ZRESULT result = GetZipItem(hz, -1, &ze);
+	if (result == ZR_OK)
+	{
+		int numitems = ze.index;
+		printf(">> flz contains file number:%d\r\n", ze.index);
+		for (int zi = 0; zi < numitems; zi++)
+		{
+			ZIPENTRY ze;
+			GetZipItem(hz, zi, &ze);
+			std::string tmpName = ze.name;
+			string::size_type idx;
+
+			printf(">> find file:%s\r\n", ze.name);
+
+			idx = tmpName.find(strFilter);//
+			if (idx != string::npos)
+			{
+				sprintf_s(ch_tmp, "%s%s", g_strTmpDesPath.c_str(), ze.name);
+				printf(">>strDesPath+file:%s\r\n", ch_tmp);
+				strTargetFullName = ch_tmp;
+				printf(">>strTargetFullName:%s\r\n", strTargetFullName.c_str());
+
+				UnzipItem(hz, zi, ch_tmp);
+				printf(">>GetZipItem  %s  done.\r\n", ze.name);
+				break; //test folder delete only
+			}
+			else
+			{
+				printf(">> Not %s\r\n", strFilter.c_str());
+			}
+		}
+
+		b_unZip = TRUE;
+
+	}
+
+	printf(">> all done \r\n");
+	CloseZip(hz);
+	return b_unZip;
+}
+BOOL UnzipTargetFile(std::string strTarget,int nType)
+{
+	printf(">> source file:%s.\r\n", strTarget.c_str());
+
+	char ch_tmp[MAX_PATH] = { 0 };
+	BOOL b_unZip = FALSE;
+	HZIP hz = OpenZip(strTarget.c_str(), 0);
+	ZIPENTRY ze;
+
+	int n;
+	///Temp test
+	//char str_path[MAX_PATH * 2] = { 0 };
+	char str_pathTmp[MAX_PATH * 2] = { 0 };
+	char str_runTmpPath[MAX_PATH * 2] = { 0 };
+
+	GetModuleFileNameA(NULL, str_pathTmp, MAX_PATH * 2);
+
+	memcpy(str_runTmpPath, str_pathTmp, MAX_PATH * 2);
+	char *pSeperator = strrchr(str_runTmpPath, '\\');
+	*(++pSeperator) = '\0';
+
+	///
+
+	ZRESULT result = GetZipItem(hz, -1, &ze);
+	if (result == ZR_OK)
+	{
+		int numitems = ze.index;
+		printf(">> targetZip contains file number:%d\r\n", ze.index);
+
+		for (int zi = 0; zi < numitems; zi++)
+		{
+			ZIPENTRY ze;
+			GetZipItem(hz, zi, &ze);///
+
+			sprintf_s(ch_tmp, "%s%s", g_strTmpDesPath.c_str(), ze.name);
+			printf(">> strDesPath+file:%s\r\n", ch_tmp);
+
+			UnzipItem(hz, zi, ch_tmp);///
+			printf(">> UnzipItem  %s  done.\r\n", ze.name);
+
+			//////Copy, but not copy folder
+			//std::string str_file = str_runTmpPath;
+			//str_file += ze.name;
+			//n = CopyFile(ch_tmp, str_file.c_str(),FALSE);
+			//if (n == 0)
+			//	printf("Move error:%d", GetLastError());
+		}
+
+		b_unZip = TRUE;
+	}
+
+	CloseZip(hz);
+
+	Sleep(500);
+
+	//delete source zip
+	printf(">> delete source file:%s.\r\n", strTarget.c_str());
+	n = DeleteFile(strTarget.c_str());
+	//If the function succeeds, the return value is nonzero.
+	if (n == 0)
+		printf("Move error:%d", GetLastError());
+
+
+	//Sleep(500);
+	//delete source folder,.,,,fail
+	//printf(">> delete temp folder:%s.\r\n", g_strDesPath.c_str());
+	//n = DeleteFile(g_strDesPath.c_str());
+	//if (n == 0)
+	//	printf("Move error:%d", GetLastError());
+
+
+	Sleep(500);
+	printf(">> Copy files to :%s.\r\n", str_runTmpPath);
+
+	if (nType == 1)
+	{
+		std::string strFinalpath = str_runTmpPath;
+		strFinalpath += "FirmwareData\\";
+
+		//A new directory must be on the same drive.
+		n = MoveFile(g_strTmpDesPath.c_str(), g_strReNamePath.c_str());
+		///If the function succeeds, the return value is nonzero.
+		///similar to rename if remove folder, but the des path must not in use
+
+		if (n == 0)
+			printf("Move error:%d\r\n", GetLastError());
+	}
+	else if (nType == 2)
+	{
+
+#if 0
+		char str_path[MAX_PATH * 2] = { 0 };
+		char str_path_bk[MAX_PATH * 2] = { 0 };
+
+		char str_pathTmp[MAX_PATH * 2] = { 0 };
+		char str_runTmpPath[MAX_PATH * 2] = { 0 };
+
+		GetModuleFileNameA(NULL, str_pathTmp, MAX_PATH * 2);
+
+		memcpy(str_runTmpPath, str_pathTmp, MAX_PATH * 2);
+		char *pSeperator = strrchr(str_runTmpPath, '\\');
+		*(++pSeperator) = '\0';
+
+		//std::string str_file = str_runTmpPath;
+		//str_file += LOG_NAME;
+		//memcpy(str_path, str_file.c_str(), str_file.length());
+
+		//n = CopyFile(g_strDesPath.c_str(), str_file.c_str(),FALSE);
+		//If the function succeeds, the return value is nonzero.
+
+		if (n == 0)
+			printf("Move error:%d",GetLastError());
+		Sleep(100);
+	
+#else
+		///copy source path to target path,include folder
+
+		//CHAR szFromPath[_MAX_PATH];//æºæ–‡ä»¶è·¯å¾„
+		//memcpy(szFromPath, lpszFrom, lpszFrom.GetLength());
+		//szFromPath[lpszFrom.GetLength() + 1] = '\0';//å¿…é¡»è¦ä»¥â€œ\0\0â€ç»“å°¾ï¼Œä¸ç„¶åˆ é™¤ä¸äº†
+		//szFromPath[lpszFrom.GetLength() + 2] = '\0';
+
+		SHFILEOPSTRUCT sFileOp;
+		SecureZeroMemory((void*)&sFileOp, sizeof(SHFILEOPSTRUCT));
+		//secureZeroMemoryå’ŒZeroMeroryçš„åŒºåˆ«
+		//æ ¹æ®MSDNä¸Šï¼ŒZeryMeroryåœ¨å½“ç¼“å†²åŒºçš„å­—ç¬¦ä¸²è¶…å‡ºç”Ÿå‘½å‘¨æœŸçš„æ—¶å€™ï¼Œ
+		//ä¼šè¢«ç¼–è¯‘å™¨ä¼˜åŒ–ï¼Œä»è€Œç¼“å†²åŒºçš„å†…å®¹ä¼šè¢«æ¶æ„è½¯ä»¶æ•æ‰åˆ°ã€‚
+		//å¼•èµ·è½¯ä»¶å®‰å…¨é—®é¢˜ï¼Œç‰¹åˆ«æ˜¯å¯¹äºå¯†ç è¿™äº›æ¯”è¾ƒæ•æ„Ÿçš„ä¿¡æ¯è€Œè¯´ã€‚
+		//è€ŒSecureZeroMemoryåˆ™ä¸ä¼šå¼•å‘æ­¤é—®é¢˜ï¼Œä¿è¯ç¼“å†²åŒºçš„å†…å®¹ä¼šè¢«æ­£ç¡®çš„æ¸…é›¶ã€‚
+		//å¦‚æœæ¶‰åŠåˆ°æ¯”è¾ƒæ•æ„Ÿçš„å†…å®¹ï¼Œå°½é‡ä½¿ç”¨SecureZeroMemoryå‡½æ•°ã€‚
+		//FileOp.fFlags = FOF_NOCONFIRMATION; //æ“ä½œä¸ç¡®è®¤æ ‡å¿— 
+		//FileOp.hNameMappings = NULL; //æ–‡ä»¶æ˜ å°„
+		//FileOp.hwnd = NULL; //æ¶ˆæ¯å‘é€çš„çª—å£å¥æŸ„ï¼›
+		//FileOp.lpszProgressTitle = NULL; //æ–‡ä»¶æ“ä½œè¿›åº¦çª—å£æ ‡é¢˜ 
+		//FileOp.pFrom = g_strDesPath.c_str(); //æºæ–‡ä»¶åŠè·¯å¾„ 
+		//FileOp.pTo = str_runTmpPath; //ç›®æ ‡æ–‡ä»¶åŠè·¯å¾„ 
+		//FileOp.wFunc = FO_COPY; //æ“ä½œç±»å‹ 
+
+		printf("SHFileOperation copy  all files:\r\n");
+		std::string strTempSrcPath = g_strTmpDesPath;
+
+		strTempSrcPath += "*";///must
+
+		sFileOp.hwnd = NULL;
+		sFileOp.wFunc = FO_COPY;//FO_DELETE;//
+		sFileOp.pFrom = strTempSrcPath.c_str();//æ–‡ä»¶æˆ–æ–‡ä»¶å¤¹è·¯å¾„
+		sFileOp.pTo = str_runTmpPath;
+		sFileOp.fFlags = FOF_NO_UI;// FOF_ALLOWUNDOæ­¤æ ‡å¿—ä½¿åˆ é™¤æ–‡ä»¶å¤‡ä»½åˆ°å›æ”¶ç«™ 
+		sFileOp.hNameMappings = NULL;
+		sFileOp.lpszProgressTitle = NULL;
+		n = SHFileOperation(&sFileOp);//execute delete
+		//Returns zero if successful; otherwise nonzero
+		///cannot use GetLastError to determine
+		if (n != 0)
+			printf("SHFileOperation copy all files ,error:%d",n);
+		Sleep(500);
+
+		////delete temp files
+		printf("SHFileOperation delete all files:\r\n");
+
+		sFileOp.wFunc = FO_DELETE;//
+		sFileOp.pFrom = strTempSrcPath.c_str();//æ–‡ä»¶æˆ–æ–‡ä»¶å¤¹è·¯å¾„
+		sFileOp.pTo = NULL;
+		n = SHFileOperation(&sFileOp);//execute delete
+		//Returns zero if successful; otherwise nonzero
+		///cannot use GetLastError to determine
+		if (n != 0)
+			printf("SHFileOperation delete * all files, error:%d\r\n", n);
+	
+		////delete temp folder
+		printf("RemoveDirectory s:\r\n");
+		n = RemoveDirectory(g_strTmpDesPath.c_str());//If the function succeeds, the return value is nonzero.
+		if (n == 0)
+			printf("RemoveDirectory ,error:%d", GetLastError());
+
+		printf("Copy and clear temp folder done:\r\n");
+	}
+#endif
+
+	printf("<< All Done \r\n");
+
+	return b_unZip;
+
+}
+
+BOOL UnzipFlsFile()
+{
+	char ch_tmp[MAX_PATH] = { 0 };
+	BOOL b_unZip = FALSE;
+	HZIP hz = OpenZip(g_flzName.c_str(), 0);
+	ZIPENTRY ze;
+
+	ZRESULT result = GetZipItem(hz, -1, &ze);
+	if (result == ZR_OK)
+	{
+		int numitems = ze.index;
+		for (int zi = 0; zi < numitems; zi++)
+		{
+			ZIPENTRY ze;
+			GetZipItem(hz, zi, &ze);
+			std::string tmpName = ze.name;
+			string::size_type idx;
+
+			printf(">> find zip-file:%s\r\n", ze.name);
+
+			idx = tmpName.find(g_strFilter1);//
+			if (idx != string::npos)
+			{
+				sprintf_s(ch_tmp, "%s%s", g_strTmpDesPath.c_str(), ze.name);
+				printf(">>strDesPath+file:%s\r\n", ch_tmp);
+				UnzipItem(hz, zi, ch_tmp);
+				printf(">>unzip \r\n");
+				////////////////
+				char ch_T[MAX_PATH] = { 0 };
+				HZIP hzT = OpenZip(ch_tmp, 0);
+				ZIPENTRY zeT;
+
+				ZRESULT resT = GetZipItem(hzT, -1, &zeT);
+				if (resT == ZR_OK)
+				{
+					int num = zeT.index;
+					for (int ziT = 0; ziT < num; ziT++)
+					{
+						ZIPENTRY zeTT;
+						GetZipItem(hzT, ziT, &zeTT);
+
+						sprintf_s(ch_T, "%s%s", g_strTmpDesPath.c_str(), zeTT.name);
+						printf(">> >>strDesPath+file:%s\r\n", ch_T);
+
+						UnzipItem(hzT, ziT, ch_T);
+						printf("<< << unzip\r\n");
+					}
+				}
+				CloseZip(hzT);
+
+				///delete ze.name zip
+
+				break; 
+				////////////////
+			}else
+			{
+				printf(">> zip-file not contains:%s\r\n", g_strFilter1.c_str());
+			}
+		}
+
+		b_unZip = TRUE;
+
+	}
+
+	printf(">> all done \r\n");
+	CloseZip(hz);
+	return b_unZip;
+}
+
+#endif
+
 
 #ifdef ProcessCall
 
@@ -805,13 +1178,13 @@ lret:
 //		0,
 //		KEY_QUERY_VALUE,
 //		&hKey
-//		);    //´ò¿ª×¢²á±í
+//		);    //æ‰“å¼€æ³¨å†Œè¡¨
 //
 //	char     szValue[125] = { 0 };
 //	DWORD    sz_regType = REG_SZ;
 //	DWORD	 dw_dataLen = sizeof(szValue);
 //
-//	if (lRet == ERROR_SUCCESS)//¶Á²Ù×÷³É¹¦
+//	if (lRet == ERROR_SUCCESS)//è¯»æ“ä½œæˆåŠŸ
 //	{
 //		//lRet = RegGetValue(
 //		//	hKey,
@@ -820,7 +1193,7 @@ lret:
 //		//	NULL,
 //		//	(LPBYTE)&out_ret,
 //		//	&dwSize
-//		//	);    //Èç¹û´ò¿ª³É¹¦£¬Ôò¶Á
+//		//	);    //å¦‚æœæ‰“å¼€æˆåŠŸï¼Œåˆ™è¯»
 //
 //		RegQueryValueEx(hKey, "Mfg", NULL, &sz_regType, (LPBYTE)&szValue, &dw_dataLen);
 //
@@ -1379,19 +1752,33 @@ void setEventPro()
 void IsACadapterConnected()
 {
 	bool res = false;
-	//ACLineStatus: Byte;         {0:µçÔ´¶Ïµç; 1:µçÔ´Õı³£; 255:µçÔ´×´Ì¬Î´Öª}
-	//BatteryFlag: Byte;          {1:µçÁ¿³ä×ã; 2:µçÁ¿µÍ; 4:µç³Ø»ù±¾ºÄ¾¡; 8:³äµç; 128:Ã»ÓĞµç³Ø; 255:µç³Ø×´Ì¬Î´Öª}
-	//BatteryLifePercent: Byte;   {0..100:ËùÊ£µçÁ¿°Ù·ÖÊı; 255:Î´Öª}
-	//Reserved1: Byte;            {±£Áô, ĞëÎª 0}
-	//BatteryLifeTime: DWORD;     {µç³ØÊ£ÓàÄÜÁ¿; -1 ±íÊ¾Î´Öª}
-	//BatteryFullLifeTime: DWORD; {µç³Ø×ÜÄÜÁ¿; -1 ±íÊ¾Î´Öª}
+	//ACLineStatus: Byte;         {0:ç”µæºæ–­ç”µ; 1:ç”µæºæ­£å¸¸; 255:ç”µæºçŠ¶æ€æœªçŸ¥}
+	//BatteryFlag: Byte;          {1:ç”µé‡å……è¶³; 2:ç”µé‡ä½; 4:ç”µæ± åŸºæœ¬è€—å°½; 8:å……ç”µ; 128:æ²¡æœ‰ç”µæ± ; 255:ç”µæ± çŠ¶æ€æœªçŸ¥}
+	//BatteryLifePercent: Byte;   {0..100:æ‰€å‰©ç”µé‡ç™¾åˆ†æ•°; 255:æœªçŸ¥}
+	//Reserved1: Byte;            {ä¿ç•™, é¡»ä¸º 0}
+	//BatteryLifeTime: DWORD;     {ç”µæ± å‰©ä½™èƒ½é‡; -1 è¡¨ç¤ºæœªçŸ¥}
+	//BatteryFullLifeTime: DWORD; {ç”µæ± æ€»èƒ½é‡; -1 è¡¨ç¤ºæœªçŸ¥}
 
 	SYSTEM_POWER_STATUS mPowerStatus;
 	BOOL bRes = GetSystemPowerStatus(&mPowerStatus);//succeed nozero return
-	printf("****SystemPower,ACLineStatus=%d, \r\n{0:µçÔ´¶Ïµç; 1:µçÔ´Õı³£; 255:µçÔ´×´Ì¬Î´Öª} \r\n ", mPowerStatus.ACLineStatus);
-	printf("****BatteryFlag = %d \r\n{ 1:µçÁ¿³ä×ã; 2:µçÁ¿µÍ; 4:µç³Ø»ù±¾ºÄ¾¡; 8:³äµç; 128:Ã»ÓĞµç³Ø; 255:µç³Ø×´Ì¬Î´Öª }\r\n", mPowerStatus.BatteryFlag);
+	printf("****SystemPower,ACLineStatus=%d, \r\n{0:ç”µæºæ–­ç”µ; 1:ç”µæºæ­£å¸¸; 255:ç”µæºçŠ¶æ€æœªçŸ¥} \r\n ", mPowerStatus.ACLineStatus);
+	printf("****BatteryFlag = %d \r\n{ 1:ç”µé‡å……è¶³; 2:ç”µé‡ä½; 4:ç”µæ± åŸºæœ¬è€—å°½; 8:å……ç”µ; 128:æ²¡æœ‰ç”µæ± ; 255:ç”µæ± çŠ¶æ€æœªçŸ¥ }\r\n", mPowerStatus.BatteryFlag);
 	printf("****SystemPower,BatteryLifePercent=%d%%\r\n", mPowerStatus.BatteryLifePercent);
 
-	printf("****SystemPower,BatteryLifeTime=%d%%,BatteryFullLifeTime=%d\r\n  {µç³ØÊ£ÓàÄÜÁ¿; -1 ±íÊ¾Î´Öª}{µç³Ø×ÜÄÜÁ¿; -1 ±íÊ¾Î´Öª}", mPowerStatus.BatteryLifeTime, mPowerStatus.BatteryFullLifeTime);
+	printf("****SystemPower,BatteryLifeTime=%d%%,BatteryFullLifeTime=%d\r\n  {ç”µæ± å‰©ä½™èƒ½é‡; -1 è¡¨ç¤ºæœªçŸ¥}{ç”µæ± æ€»èƒ½é‡; -1 è¡¨ç¤ºæœªçŸ¥}", mPowerStatus.BatteryLifeTime, mPowerStatus.BatteryFullLifeTime);
+}
+#endif
+
+#ifdef Test_fileExist
+BOOL IsFileExist(const std::string &csFile)
+{
+	DWORD dwAttrib = GetFileAttributes(csFile.c_str());
+	return INVALID_FILE_ATTRIBUTES != dwAttrib && 0 == (dwAttrib & FILE_ATTRIBUTE_DIRECTORY);
+}
+// åˆ¤æ–­æ–‡ä»¶å¤¹æ˜¯å¦å­˜åœ¨
+BOOL IsDirExist(const std::string &csDir)
+{
+	DWORD dwAttrib = GetFileAttributes(csDir.c_str());
+	return INVALID_FILE_ATTRIBUTES != dwAttrib && 0 != (dwAttrib & FILE_ATTRIBUTE_DIRECTORY);
 }
 #endif
